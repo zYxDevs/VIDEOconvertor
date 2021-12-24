@@ -18,20 +18,14 @@ async def trim(event, msg, st, et):
     Drone = event.client
     edit = await Drone.send_message(event.chat_id, "Trying to process.", reply_to=msg.id)
     new_name = "out_" + dt.now().isoformat("_", "seconds")
-    if hasattr(msg.media, "document"):
-        file = msg.media.document
-    else:
-        file = msg.media
+    file = msg.media.document if hasattr(msg.media, "document") else msg.media
     mime = msg.file.mime_type
-    if 'mp4' in mime:
-        name = "media_" + dt.now().isoformat("_", "seconds") + ".mp4"
-        out = new_name + ".mp4"
-    elif msg.video:
+    if 'mp4' in mime or msg.video:
         name = "media_" + dt.now().isoformat("_", "seconds") + ".mp4"
         out = new_name + ".mp4"
     elif 'x-matroska' in mime:
         name = "media_" + dt.now().isoformat("_", "seconds") + ".mkv" 
-        out = new_name + ".mkv"       
+        out = new_name + ".mkv"
     elif 'webm' in mime:
         name = "media_" + dt.now().isoformat("_", "seconds") + ".webm" 
         out = new_name + ".webm"
@@ -44,7 +38,7 @@ async def trim(event, msg, st, et):
         await fast_download(name, file, Drone, edit, DT, "**DOWNLOADING:**")
     except Exception as e:
         print(e)
-        return await edit.edit(f"An error occured while downloading.\n\nContact [SUPPORT]({SUPPORT_LINK})", link_preview=False) 
+        return await edit.edit(f"An error occured while downloading.\n\nContact [SUPPORT]({SUPPORT_LINK})", link_preview=False)
     try:
         await edit.edit("Trimming.")
         bash(f'ffmpeg -i {name} -ss {st} -to {et} -acodec copy -vcodec copy {out}')
